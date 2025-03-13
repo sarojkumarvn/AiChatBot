@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import "./index.css";
 import { ChatBotIcon } from "./components/ChatBotIcon";
+import { ChatForm } from "./components/ChatForm";
 
 function App() {
   const [isOpen, setIsOpen] = useState(false);
+  const [ChatHistory, setChatHistory] = useState([]);
 
   const toggleChatbot = () => {
     setIsOpen(!isOpen);
@@ -67,20 +69,10 @@ function App() {
         </div>
 
         {/* Input Area */}
+        <ChatForm setChatHistory={setChatHistory} />
 
-        {/* <div className="p-4 border-t border-gray-200">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Type your message..."
-              className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button className="bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              Send
-            </button>
-          </div>
-        </div> */}
-        
+
+
       </div>
     </div>
   );
