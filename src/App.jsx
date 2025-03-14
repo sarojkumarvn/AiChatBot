@@ -2,11 +2,45 @@ import React, { useState } from "react";
 import "./index.css";
 import { ChatBotIcon } from "./components/ChatBotIcon";
 import { ChatForm } from "./components/ChatForm";
-import { ChatMessageUser } from "./components/ChatMessageUser";
 
-function App() {
+const App = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
+  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY
+
+  const GenerateBotResponse = async (history) => {
+    const formattedHistory = history.map((chat) => ({
+      role: chat.role,
+      content: chat.content,
+    }));
+
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`, 
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({
+        model: "deepseek/deepseek-r1:free", 
+        messages: formattedHistory,
+      }),
+    };
+
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", requestOptions);
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+      const data = await response.json();
+      const botResponse = data.choices?.[0]?.message?.content || "Sorry, I couldn't understand that.";
+      
+      setChatHistory((history) => [...history, { role: "model", content: botResponse }]);
+      console.log("Bot response:", botResponse);
+    } catch (error) {
+      console.error("Error fetching bot response:", error);
+    }
+  };
 
   const toggleChatbot = () => {
     setIsOpen(!isOpen);
@@ -17,9 +51,7 @@ function App() {
       {/* Chatbot Toggle Button */}
       <button
         onClick={toggleChatbot}
-        className={`chatbot-toggle-button ${
-          isOpen ? "open" : ""
-        } bg-emerald-500 text-white p-4 rounded-full shadow-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+        className="bg-emerald-500 text-white p-4 rounded-full shadow-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -31,43 +63,48 @@ function App() {
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-          />
+            strokeWidth="2"
+            d="M9 10h.01M15 10h.01M12 14h.01M12 10h.01m6 2a6 6 0 11-12 0 6 6 0 0112 0zM5 16H4a1 1 0 01-1-1v-1a1 1 0 011-1h1m14 0h1a1 1 0 011 1v1a1 1 0 01-1 1h-1m-4 0h-4m4 0a2 2 0 01-2 2h-4a2 2 0 01-2-2m10-4h1a1 1 0 011 1v1a1 1 0 01-1 1h-1m-14 0H4a1 1 0 01-1-1v-1a1 1 0 011-1h1m14 0h1a1 1 0 011 1v1a1 1 0 01-1 1h-1m-14 0H4a1 1 0 01-1-1v-1a1 1 0 011-1h1m10 0h4m-4 0a2 2 0 01-2 2h-4a2 2 0 01-2-2m10-4h1a1 1 0 011 1v1a1 1 0 01-1 1h-1m-14 0H4a1 1 0 01-1-1v-1a1 1 0 011-1h1"
+        />
         </svg>
       </button>
-
-      {/* Chatbot Window */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 w-[400px] bg-white rounded-lg shadow-lg flex flex-col h-[500px]">
-          {/* Chatbot Header */}
+        <div className="fixed bottom-20 right-4 bg-white shadow-lg rounded-lg w-80 h-[500px] flex flex-col">
           <div className="bg-blue-500 text-white p-4 rounded-t-lg flex items-center gap-2">
             <ChatBotIcon />
             <h1 className="text-lg font-semibold">AI Chatbot</h1>
           </div>
-
-          {/* Chat Messages Container */}
           <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-            {/* Example Chat Messages from bot */}
-            <div className="mb-4">
-              <div className="text-gray-700 bg-gray-200 p-3 rounded-lg max-w-[70%]">
+            <div className="mb-4 flex justify-start">
+              <div className="bg-gray-200 text-gray-700 p-3 rounded-lg max-w-[70%]">
                 <p>Hello! How can I assist you today?</p>
               </div>
             </div>
-            {/* message from user */}
             {chatHistory.map((chat, index) => (
-              <ChatMessageUser key={index} chat={chat} /> //passing the values using props
-            
+              <div
+                key={index}
+                className={`mb-4 flex ${chat.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`p-3 rounded-lg max-w-[70%] ${
+                    chat.role === "user" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  <p>{chat.content}</p>
+                </div>
+              </div>
             ))}
-          
           </div>
-
-          {/* Input Area */}
-          <ChatForm setChatHistory={setChatHistory} />
+          <ChatForm
+            setChatHistory={setChatHistory}
+            chatHistory={chatHistory}
+            GenerateBotResponse={GenerateBotResponse}
+          />
         </div>
       )}
     </div>
   );
 }
+
 
 export default App;

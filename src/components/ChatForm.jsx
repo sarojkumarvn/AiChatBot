@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { SendBtn } from "./SendBtn";
 
-export const ChatForm = ({ setChatHistory }) => {
+export const ChatForm = ({ chatHistory, setChatHistory, GenerateBotResponse }) => {
   const inputRef = useRef();
 
   const handleFormSubmit = (e) => {
@@ -10,13 +10,23 @@ export const ChatForm = ({ setChatHistory }) => {
     if (!userMessage) return;
 
     inputRef.current.value = "";
-    console.log(userMessage);
 
-    //update the chat history with the users message
+    // Immediately update chat history with the user's message
     setChatHistory((history) => [
       ...history,
       { role: "user", content: userMessage },
     ]);
+
+    // Simulate bot response
+    setTimeout(() => {
+      setChatHistory((history) => [
+        ...history,
+        { role: "model", content: "Thinking..." },
+      ]);
+
+      // calling the functiob which generate the bot response
+      GenerateBotResponse([...chatHistory, { role: "user", content: userMessage }]);
+    }, 600);
   };
 
   return (
