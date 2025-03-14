@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import "./index.css";
 import { ChatBotIcon } from "./components/ChatBotIcon";
 import { ChatForm } from "./components/ChatForm";
+import { getAiResponse } from "./util/GeminiUtils";
 
 const App = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY
+  // const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY
 
   const GenerateBotResponse = async (history) => {
     const formattedHistory = history.map((chat) => ({
@@ -14,29 +15,16 @@ const App = () => {
       content: chat.content,
     }));
 
-    const requestOptions = {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`, 
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-      body: JSON.stringify({
-        model: "deepseek/deepseek-r1:free", 
-        messages: formattedHistory,
-      }),
-    };
-
     try {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", requestOptions);
-      if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`);
-      }
-      const data = await response.json();
-      const botResponse = data.choices?.[0]?.message?.content || "Sorry, I couldn't understand that.";
-      
-      setChatHistory((history) => [...history, { role: "model", content: botResponse }]);
-      console.log("Bot response:", botResponse);
+      const response = await getAiResponse(
+        formattedHistory[formattedHistory.length - 1].content
+      );
+
+      setChatHistory((history) => [
+        ...history,
+        { role: "model", content: response },
+      ]);
+      console.log("Bot response:", response);
     } catch (error) {
       console.error("Error fetching bot response:", error);
     }
@@ -65,7 +53,7 @@ const App = () => {
             strokeLinejoin="round"
             strokeWidth="2"
             d="M9 10h.01M15 10h.01M12 14h.01M12 10h.01m6 2a6 6 0 11-12 0 6 6 0 0112 0zM5 16H4a1 1 0 01-1-1v-1a1 1 0 011-1h1m14 0h1a1 1 0 011 1v1a1 1 0 01-1 1h-1m-4 0h-4m4 0a2 2 0 01-2 2h-4a2 2 0 01-2-2m10-4h1a1 1 0 011 1v1a1 1 0 01-1 1h-1m-14 0H4a1 1 0 01-1-1v-1a1 1 0 011-1h1m14 0h1a1 1 0 011 1v1a1 1 0 01-1 1h-1m-14 0H4a1 1 0 01-1-1v-1a1 1 0 011-1h1m10 0h4m-4 0a2 2 0 01-2 2h-4a2 2 0 01-2-2m10-4h1a1 1 0 011 1v1a1 1 0 01-1 1h-1m-14 0H4a1 1 0 01-1-1v-1a1 1 0 011-1h1"
-        />
+          />
         </svg>
       </button>
       {isOpen && (
@@ -83,11 +71,15 @@ const App = () => {
             {chatHistory.map((chat, index) => (
               <div
                 key={index}
-                className={`mb-4 flex ${chat.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`mb-4 flex ${
+                  chat.role === "user" ? "justify-end" : "justify-start"
+                }`}
               >
                 <div
                   className={`p-3 rounded-lg max-w-[70%] ${
-                    chat.role === "user" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
+                    chat.role === "user"
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-700"
                   }`}
                 >
                   <p>{chat.content}</p>
@@ -104,7 +96,6 @@ const App = () => {
       )}
     </div>
   );
-}
-
+};
 
 export default App;
