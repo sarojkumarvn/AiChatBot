@@ -2,14 +2,16 @@ import React, { useState } from "react";
 import "./index.css";
 import { ChatBotIcon } from "./components/ChatBotIcon";
 import { ChatForm } from "./components/ChatForm";
+import { ChatMessageUser } from "./components/ChatMessageUser";
 
 function App() {
   const [isOpen, setIsOpen] = useState(false);
-  const [ChatHistory, setChatHistory] = useState([]);
+  const [chatHistory, setChatHistory] = useState([]);
 
   const toggleChatbot = () => {
     setIsOpen(!isOpen);
   };
+
   return (
     <div className="fixed bottom-4 right-4">
       {/* Chatbot Toggle Button */}
@@ -36,44 +38,34 @@ function App() {
       </button>
 
       {/* Chatbot Window */}
-      <div
-        className={`chatbot-window ${
-          isOpen ? "open" : ""
-        } fixed bottom-20 right-4 w-100 bg-white rounded-lg shadow-lg flex flex-col h-120`}
-      >
-        {/* Chatbot Header */}
-        <div className="bg-blue-500 text-white p-4 rounded-t-lg flex  items-center gap-1">
-          <ChatBotIcon />
-          <h1 className="text-lg font-semibold">AI Chatbot</h1>
+      {isOpen && (
+        <div className="fixed bottom-20 right-4 w-[400px] bg-white rounded-lg shadow-lg flex flex-col h-[500px]">
+          {/* Chatbot Header */}
+          <div className="bg-blue-500 text-white p-4 rounded-t-lg flex items-center gap-2">
+            <ChatBotIcon />
+            <h1 className="text-lg font-semibold">AI Chatbot</h1>
+          </div>
+
+          {/* Chat Messages Container */}
+          <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+            {/* Example Chat Messages from bot */}
+            <div className="mb-4">
+              <div className="text-gray-700 bg-gray-200 p-3 rounded-lg max-w-[70%]">
+                <p>Hello! How can I assist you today?</p>
+              </div>
+            </div>
+            {/* message from user */}
+            {chatHistory.map((chat, index) => (
+              <ChatMessageUser key={index} chat={chat} /> //passing the values using props
+            
+            ))}
+          
+          </div>
+
+          {/* Input Area */}
+          <ChatForm setChatHistory={setChatHistory} />
         </div>
-
-        {/* Chat Messages Container */}
-        <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-          {/* Example Chat Messages */}
-          <div className="mb-4">
-            <div className="text-gray-700 bg-gray-200 p-3 rounded-lg max-w-[70%]">
-              <p>Hello! How can I assist you today?</p>
-            </div>
-          </div>
-          <div className="mb-4 flex justify-end">
-            <div className="text-white bg-blue-500 p-3 rounded-lg max-w-[70%]">
-              <p>Hi, I need help with something.</p>
-            </div>
-          </div>
-          {/* Reply from AI */}
-          <div className="mb-4">
-            <div className="text-gray-700 bg-gray-200 p-3 rounded-lg  max-w-[70%]">
-              <p>Yes Please</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Input Area */}
-        <ChatForm setChatHistory={setChatHistory} />
-
-
-
-      </div>
+      )}
     </div>
   );
 }
