@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./index.css";
-import { ChatBotIcon } from "./components/ChatBotIcon";
+import { ChatBotIcon, ChatBotIcon2 } from "./components/ChatBotIcon";
 import { ChatForm } from "./components/ChatForm";
 import { getAiResponse } from "./util/GeminiUtils";
+import { RefreshBtn } from "./components/RefreshBtn";
 
 const App = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -46,34 +47,29 @@ const App = () => {
     setIsOpen(!isOpen);
   };
 
-  const refreshChat = () => {
-    setChatHistory([
-      { role: "model", content: "Hi, how can I help you today?" },
-    ]);
-  };
-
+  
   return (
     <div className="fixed bottom-4 right-4">
       {/* Chatbot Toggle Button */}
       <button
         onClick={toggleChatbot}
-        className="bg-emerald-500 text-white p-4 rounded-full shadow-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="bg-emerald-500 text-white p-1 rounded-full shadow-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
-        💬
+        {isOpen ? <ChatBotIcon2 /> : <ChatBotIcon />}
+       
       </button>
       {isOpen && (
         <div className="fixed bottom-20 right-4 bg-white shadow-lg rounded-lg w-100 h-[500px] flex flex-col">
           <div className="bg-blue-500 text-white p-4 rounded-t-lg flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ChatBotIcon />
+            <div 
+            className="flex items-center gap-2">
+              <ChatBotIcon2 />
               <h1 className="text-lg font-semibold">AI Chatbot</h1>
             </div>
-            <button
-              onClick={refreshChat}
-              className="bg-red-500 px-3 py-1 rounded text-white hover:bg-red-700"
-            >
-              Refresh
-            </button>
+
+            {/* Refresh Button */}
+            <RefreshBtn setChatHistory={setChatHistory} />
+          
           </div>
           <div
             ref={chatContainerRef}
